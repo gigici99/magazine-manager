@@ -1,0 +1,21 @@
+services:
+  mongodb:
+    image: mongodb/mongodb-community-server:7.0-ubi9
+    container_name: mongoDB
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: appuser
+      MONGO_INITDB_ROOT_PASSWORD: apppass
+      MONGO_INITDB_DATABASE: appdb
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --eval 'db.runCommand({ ping: 1 })' --quiet || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
