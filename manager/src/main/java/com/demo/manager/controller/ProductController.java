@@ -7,15 +7,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -48,11 +45,11 @@ public class ProductController {
 
     @Operation(description = "Return all products")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "products has been take"),
-            @ApiResponse(responseCode = "400", description = "product hasn't been take")
+            @ApiResponse(responseCode = "200", description = "list of products has been take"),
+            @ApiResponse(responseCode = "400", description = "list products hasn't been take")
     })
-    @GetMapping("/all")
-    public ResponseEntity<List<Product>> createProduct() {
+    @GetMapping
+    public ResponseEntity<List<Product>> getProductAll() {
         List<Product> products = productService.findAll();
 
         if (products.isEmpty()) {
@@ -60,6 +57,72 @@ public class ProductController {
         }
         return ResponseEntity.ok(products);
     }
+
+    @Operation(description = "Return product by id")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "product has been take"),
+            @ApiResponse(responseCode = "400", description = "product hasn't been take")
+    })
+    @GetMapping("/{idProd}")
+    public ResponseEntity<Product> getProductById(@PathVariable String idProd){
+        Product prod = productService.findById(idProd);
+        if (prod == null){
+            return ResponseEntity.status(400).build();
+        }
+        return ResponseEntity.ok(prod);
+    }
+
+    @Operation(description = "Update product by id")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "product has been update"),
+            @ApiResponse(responseCode = "404", description = "product not found"),
+            @ApiResponse(responseCode = "409", description = "product has a conflic with db"),
+            @ApiResponse(responseCode = "500", description = "all error")
+    })
+    @PutMapping("/{idProd}")
+    public ResponseEntity<Product> updateProductById(@PathVariable String idProd, @RequestBody Product product){
+        log.info("Update product id={}", idProd);
+
+        try {
+            if (!productService.existsById(idProd)){
+                return ResponseEntity.notFound().build();
+            }
+            productService.updateProduct(product, idProd);
+            return ResponseEntity.noContent().build();
+        } catch (DataIntegrityViolationException e) {
+            log.error("Integrity violation deleting product {}: {}", idProd, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.CONFLICT).build(); // 409 se vincoli DB
+        } catch (Exception e) {
+            log.error("Error deleting product {}: {}", idProd, e.getMessage(), e);
+            return ResponseEntity.internalServerError().build(); // 500 altri casi
+        }
+    }
+
+    @Operation(description = "Delete product by id")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "product has been deleted"),
+            @ApiResponse(responseCode = "404", description = "product not found"),
+            @ApiResponse(responseCode = "409", description = "product has a conflic with db"),
+            @ApiResponse(responseCode = "500", description = "all error")
+    })
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProductById(@PathVariable String id) {
+        log.info("DELETE product id={}", id);
+        try {
+            if (!productService.existsById(id)) {
+                return ResponseEntity.notFound().build(); // 404 se non esiste
+            }
+            productService.deleteProduct(id);
+            return ResponseEntity.noContent().build(); // 204 OK
+        } catch (DataIntegrityViolationException e) {
+            log.error("Integrity violation deleting product {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.CONFLICT).build(); // 409 se vincoli DB
+        } catch (Exception e) {
+            log.error("Error deleting product {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.internalServerError().build(); // 500 altri casi
+        }
+    }
+
 
 
 }

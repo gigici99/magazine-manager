@@ -62,6 +62,14 @@ public class ProductService {
         }
     }
 
+    public boolean existsById(String idProd) {
+        Product product = findById(idProd);
+
+        if (product != null) return true;
+
+        return false;
+    }
+
     public void deleteProduct (String idProduct) {
         productRepository.deleteById(idProduct);
     }

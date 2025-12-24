@@ -1,0 +1,3 @@
+commandi per accedere al db da shell usando docker.
+
+	-docker exec -it mongoDB mongosh -u appuser -p apppass --authenticationDatabase admin appdb
