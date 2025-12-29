@@ -113,4 +113,35 @@ public class ProductServiceTest {
         assertEquals(22, saved.getQuantity());
         assertNotSame(updateProd, saved, "The service need saved the modify entity, not the input");
     }
+
+
+    @Test
+    public void updateProduct_whenPropductIsValidAndContainOneUpdate_returnProductUpdate(){
+        Product updateProd = new Product(
+                null,
+                "watch",
+                "",
+                0
+        );
+        Product savedProd = new Product(
+                "123",
+                "watch",
+                "isin-fdnuiwe384",
+                12
+        );
+
+        when(productRepository.findById(validProduct.getId())).thenReturn(Optional.ofNullable(validProduct));
+        when(productRepository.save(any(Product.class))).thenReturn(savedProd);
+
+        productService.updateProduct(updateProd, "123");
+
+        verify(productRepository).findById(eq("123"));
+        verify(productRepository).save(productCaptor.capture());
+
+        Product saved = productCaptor.getValue();
+        assertEquals("watch", saved.getNameProduct());
+        assertEquals(validProduct.getCodeProduct(), saved.getCodeProduct(), "The code not change!");
+        assertEquals(validProduct.getQuantity(), saved.getQuantity(), "the quantity not change");
+        assertNotSame(updateProd, saved, "The service need saved the modify entity, not the input");
+    }
 }
