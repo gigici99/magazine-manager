@@ -19,12 +19,17 @@ public class ProductService {
 
     // Crud operation
     public void createProduct(Product product) {
+        if (product == null) {
+            log.error("Cannot save null product");
+            throw new IllegalArgumentException("Product cannot be null");
+        }
+
         try {
-            if (product != null) productRepository.save(product);
-            log.info("The product: " + product.toString() + " is correctly save!");
-        } catch (NullPointerException e) {
-            e.getMessage();
-            log.error("The product: " + product + " is null!");
+            productRepository.save(product);
+            log.info("Product saved successfully: {}", product);
+        } catch (Exception e) {
+            log.error("Error saving product: {}", product, e);
+            throw e;
         }
     }
 

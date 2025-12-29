@@ -24,6 +24,14 @@ public class Product {
     public Product() {
     }
 
+    // the implements of this constructor is used only for test case.
+    public Product(String idProd, String nameProduct, String codeProduct, int quantity){
+        this.id = idProd;
+        this.nameProduct = nameProduct;
+        this.codeProduct = codeProduct;
+        this.quantity = quantity;
+    }
+
     public String getId() {
         return id;
     }
