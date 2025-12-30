@@ -13,7 +13,7 @@ public class GestioneProdottiTest {
     public void setup() {
         // Assicurati che il driver sia nel PATH o usa WebDriverManager
         driver = new ChromeDriver();
-        driver.get("http://localhost:5173"); // L'URL dove gira il tuo Vue
+        driver.get("http://localhost:5173"); // L'URL dove gira Vue
         productPage = new ProductPage(driver);
     }
 

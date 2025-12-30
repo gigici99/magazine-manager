@@ -41,31 +41,48 @@ public class ProductService {
         return productRepository.findAll();
     }
 
+
     public void updateProduct(Product product, String idProduct) {
-        try {
-            if (product != null) {
-                Product productUpdate = findById(idProduct);
-
-                if (product.getNameProduct() != null &&
-                        !product.getNameProduct().equals(productUpdate.getNameProduct())) {
-                    productUpdate.setNameProduct(product.getNameProduct());
-                }
-
-                if (product.getCodeProduct() != null &&
-                        !product.getCodeProduct().equals(productUpdate.getCodeProduct())) {
-                    productUpdate.setCodeProduct(product.getCodeProduct());
-                }
-
-                if (product.getQuantity() >= 0) {
-                    productUpdate.setQuantity(productUpdate.getQuantity() + product.getQuantity());
-                }
-                productRepository.save(productUpdate);
-                log.info("The product has been updated: " + productUpdate);
-            }
-        } catch (Exception e) {
-            log.error("Error updating product: " + e.getMessage(), e);
+        if (product == null) {
+            throw new IllegalArgumentException("Product cannot be null");
         }
+        Product productUpdate = findById(idProduct); // lancia se non trovato
+
+        boolean changed = false;
+
+        if (product.getNameProduct() != null && !product.getNameProduct().isBlank()
+                && !product.getNameProduct().equals(productUpdate.getNameProduct())) {
+            productUpdate.setNameProduct(product.getNameProduct());
+            changed = true;
+        }
+
+        if (product.getCodeProduct() != null && !product.getCodeProduct().isBlank()
+                && !product.getCodeProduct().equals(productUpdate.getCodeProduct())) {
+            productUpdate.setCodeProduct(product.getCodeProduct());
+            changed = true;
+        }
+
+        int delta = product.getQuantity();
+        if (delta != 0) {
+            int current = productUpdate.getQuantity();
+            int newQty = current + delta;
+            if (newQty < 0) {
+                log.error("Insufficient stock: current={}, delta={}, newQty={}", current, delta, newQty);
+                throw new IllegalArgumentException("Insufficient stock for product " + idProduct);
+            }
+            productUpdate.setQuantity(newQty);
+            changed = true;
+        }
+
+        if (!changed) {
+            log.info("No changes for product {}", idProduct);
+            return;
+        }
+
+        productRepository.save(productUpdate);
+        log.info("The product has been updated: {}", productUpdate);
     }
+
 
     public boolean existsById(String idProd) {
         Product product = findById(idProd);

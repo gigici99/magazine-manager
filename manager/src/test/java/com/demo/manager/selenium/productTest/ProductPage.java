@@ -14,7 +14,7 @@ public class ProductPage {
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(5));
     }
 
-    // Selettori basati sui tuoi data-test
+    // Selettori basati sui data-test
     private By addBtn = By.cssSelector("[data-test='add-product']");
     private By nameInput = By.cssSelector("[data-test='product-name']");
     private By codeInput = By.cssSelector("[data-test='product-code']");
